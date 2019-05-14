@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# adresář s daty (plní se dle potřeby)
+data/*
+!data/data.txt
+
+# vyrenderované soubory
+*.html
+*.pdf
+*.log
+
