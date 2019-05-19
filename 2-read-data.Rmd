@@ -1,0 +1,155 @@
+---
+title: "Krok druhý "
+description: "načtení externích dat – csvčka, excely a databáze"
+author: "Jindra Lacko"
+date: '2019-05-03'
+output:
+  blogdown::html_page:
+    toc: true
+slug: R4SU-read-data
+categories:
+  - R4SU
+tags: []
+---
+
+
+Používaných externích zdrojů dat je mnoho; tři nejčastějši používané jsou:
+
+- csv soubory
+- soubory Microsoft Excel
+- relační databáze
+
+Postupně předvedeme použití všech tří.
+
+Začneme inicializací – načtením `tidyverse` a stažením podkladových souborů, pokud lokálně neexistují.
+
+```{r setup, message = F}
+library(tidyverse)
+
+# pokud soubory neexistují lokálně – stahnout!
+if (!file.exists('./data/potraviny.csv')) {
+  curl::curl_download("https://www.jla-data.net/sample/R4SU-potraviny.csv", 
+                      "./data/potraviny.csv")
+}
+
+if (!file.exists('./data/potraviny_excel.xlsx')) {
+  curl::curl_download("https://www.jla-data.net/sample/R4SU-potraviny_excel.xlsx",
+                      "./data/potraviny_excel.xlsx")
+}
+
+if (!file.exists('./data/encoding.txt')) {
+  curl::curl_download("https://www.jla-data.net/sample/R4SU-encoding.txt",
+                      "./data/encoding.txt")
+}
+
+```
+
+# CSV soubory
+
+Formát CSV ([comma separated values](https://cs.wikipedia.org/wiki/CSV)) je nejčastěji používaný formát pro výměnu tabulkových dat napříč systémy.
+
+Má dvě základní mutace 
+
+- hodnoty oddělené *čárkami* (s desetinným oddělovačem *tečkou* – používána zejména v USA) a 
+- hodnoty oddělené *středníkem* (s desetinným oddělovačem *čárkou* – používáné v ČR a dalších evropských zemích).
+
+Pro načtení dat s oddělovačem čárka platí fukce `read.csv()` v base R, a `readr::read_csv()` z širšího `tidyverse`, kterou doporučuji. 
+
+Pro načtení dat s oddělovačem středník platí funkce `read.csv2()` v base R, a `readr::read_csv2()` z širšího `tidyverse`, kterou doporučuji.
+
+V obou případech se jedná o specifickou úpravu obecné funkce (`utils::read.table()` a `readr::read_delim()`).
+
+Tabulka potraviny pochází z Českého statistického úřadu, a používá českou konvenci (tj. oddělovač středník, a desetinná čárka = načtení pomocí funkce s dvojkou na konci).
+
+```{r read-csv, message = F}
+library(readr)       # čte csv
+
+potraviny_csv <- read_csv2("./data/potraviny.csv")
+
+glimpse(potraviny_csv)
+
+```
+
+# Excel (.xls a .xlsx)
+
+Microsoft Excel se používá prakticky všude, a mnoho tabulkových dat je uloženo v tomto formátu.
+
+Excel nevynucuje konzistenci tabulkových dat, což uživatelům vyhovuje. Využívají možnosti slučování buněk a nepovinných hlavičkových sloupců. Excelové soubory proto zpravidla vyžadují před načtením do R určitou úpravu.
+
+Je více možností načtení excelových tabulek (včetně mezikroku přes csv), doporučuji `readxl::read_excel()`. Zvláštní pozornost zasluhuje možnost omezit oblast (range) dat k importu. Tak je možné vyloučit problematické partie (typicky sloučené buňky).
+
+```{r read-excel, message = F}
+library(readxl)      # čte xls a xlsx
+
+potraviny_xls <- read_excel("./data/potraviny_excel.xlsx", 
+                            range = "METAINFORMACE!B12:F26") # konkrétní oblast (range) metodikou Excelu
+
+glimpse(potraviny_xls)
+
+```
+
+# Relační databáze
+
+Databáze jsou standardním úložištěm tabulkových dat v podnikovém prostředí. Pro přístup k datům v nich zpravidla volíme techniky jazyka SQL.
+
+R má několik metod přístupu k datům v SQL; doporučuji obecnou knihovnu `DBI` ve spojení s konkrétními knihovnami pro danou databázi. Zde `RPostgreSQL` pro Postgres. Obecné ODBC je v packagi `odbc`.
+
+Důležitá věc u databází je, že před samotným importem je potřeba inicializovat připojení (connection object) pomocí uživatelského jména a hesla, a na závěr připojení ukončit. Na to se často zapomíná, a u administrátorů s tím bývá mrzení...
+
+```{r read-sql, message = F}
+library(DBI)         # interface z R do relačních databází obecně
+library(RPostgreSQL) # implementace DBI pro Postgres konkrétně
+
+
+con <- dbConnect(dbDriver('PostgreSQL'),
+                 host = "db.jla-data.net",
+                 port = 5432,
+                 dbname = "R4SU",
+                 user = "R4SU",     # uživatel s právem pouze select ...
+                 password = "R4SU") # ... a tak jeho heslo nemusím tolik řešit :)
+
+potraviny_sql <- dbGetQuery(con, "select * 
+                                  from potraviny 
+                                  where obdobiod >= date '2018-12-01'")
+
+dbDisconnect(con) # uklidit po sobě je slušnost...
+
+glimpse(potraviny_sql)
+
+```
+
+# Pár slov k češtině
+
+Erko je aplikace, běží na konkrétním operačním systému (zejména Windows, macOS a Linux). Ten se primárně stará o kódování textu (tj. češtinu). Rozhraní mezi erkem a systémem je obecně zranitelné místo, ne vždy se od něj daří uživatele odstínit na pozadí. Tehdy se hodí konverzní funkce.  
+
+Pro práci s mezinárodními znaky používáme knihovnu `stringi`, dvě důležité funkce jsou:
+
+- `stri_detect()` se pokusí z textu odhadnout kódování
+- `stri_encode()` převede text z jednoho kódování do druhého
+
+```{r cestina}
+library(stringi)     # převody kódování (strings international)
+
+asdf <- readLines("./data/encoding.txt")[1] # načtu první řádek ze souboru
+
+asdf # toto bude rozsypaný čaj
+
+stri_enc_detect(asdf) # zjistím nejpravděpodobnější kódování
+
+stri_encode(asdf, from = "ISO-8859-2", to = "UTF-8") # takhle to dává větší smysl
+
+```
+
+Z opatrnosti radím: nepoužívejte non-ASCII znaky ve vlastním kódu (textové řetězce jsou OK) a v názvech souborů, pokud pro to nemáte opravdu vážný důvod.
+
+Dále radím: vždy, když si můžete vybrat, volte pro text kódování unicode (UTF-8). 
+
+# Další čtení / reference
+
+* [Data Import](https://github.com/rstudio/cheatsheets/raw/master/data-import.pdf) cheatsheet od RStudia  
+* [package readr](https://readr.tidyverse.org/) dokumentace  
+* [package readxl](https://readxl.tidyverse.org/) dokumentace  
+* [Data Import](https://r4ds.had.co.nz/data-import.html) kapitola R for Data Science  
+
+
+

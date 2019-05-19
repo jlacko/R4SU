@@ -1,0 +1,225 @@
+---
+title: "Krok třetí"
+description: "manipulace s daty – dplyr, slovesa a pajpy"
+author: "Jindra Lacko"
+date: '2019-05-04'
+output:
+  blogdown::html_page:
+    toc: true
+slug: R4SU-manipulate-data
+categories:
+  - R4SU
+tags: []
+---
+```{r setup, message = F}
+# Začneme iniciací prostředí.
+
+library(tidyverse)
+
+# pokud soubory neexistují lokálně - stahnout!
+if (!file.exists('./data/potraviny.csv')) {
+  curl::curl_download("https://www.jla-data.net/sample/R4SU-potraviny.csv", 
+                      "./data/potraviny.csv")
+}
+
+# lokální soubor načíst
+potraviny_csv <- readr::read_csv2("./data/potraviny.csv")
+
+```
+
+
+# Základní přehled
+
+Pro mnohé uživatele Excelu obrovský problém erka: data nejsou vidět!
+
+Čtyři dobré funkce pro základní přehled jsou:
+
+- `View()` ukáže interaktivně v rámci RStudia – tedy ne zde, v textu – náhled na data (pozor – uvidíte najednou kolem dvaceti řádků z celkových sto osmi tisíc) 
+- `head()` ukazuje prvních šest řádků (jejím doplňkem je `tail()` na *posledních* šest řádků)
+- `summary()` ukazuje výčet sloupců a pro číselné hodnoty základní popisnou statistiku (minimum, maximum, kvartily a medián)
+- `glimpse()` ukáže počet řádků, seznam sloupců a tolik hodnot, kolik se vejde na šířku stránky
+
+
+```{r overview}
+head(potraviny_csv) 
+
+summary(potraviny_csv) # základní popisná statistika (min, max, kvartily) pro číselné sloupce
+
+glimpse(potraviny_csv) # počet řádků, výčet sloupců, "ochutnávka" hodnot
+```
+
+## Úvodní orientace v datech 
+
+- `nrow()` počet řádků data framu
+- `length()` délka vektoru (počet hodnot)  
+- `unique()` výčet unikántních hodnot vektoru 
+- `mean()` průměr hodnot vektoru
+- `sum()` součet hodnot vektoru  
+
+```{r unikátní-hodnoty}
+nrow(potraviny_csv) # počet řádků data framu potraviny_csv
+
+length(potraviny_csv$reprcen_txt) # délka vektoru cenových reprezentantů
+
+unique(potraviny_csv$reprcen_txt) # unikátní hodnoty vektoru cenových reprezentantů
+
+mean(potraviny_csv$hodnota) # průměrná cena (napříč všemi potravinami, a tedy nesmyslná částka)
+
+sum(unique(potraviny_csv$uzemi_kod)) # součet unikátních hodnot číselníku území (zcela nesmyslná hodnota)
+ 
+```
+
+# Manipulace s data framem – tidyverse / dplyr
+
+V rámci `tidyverse` představuje `dplyr` hlavní knihovnu pro manipulaci s tabulkovými daty. Je postaven na konceptu "sloves", která vykonávají určitou činnost nad data framem.
+
+Důležitý koncept představuje pajpa (pipe) `%>%`. Znamená posunutí operátoru na první argument následující funkce. Na první pohled složité, ale ve skutečnosti velmi funční. Do hovorového jazyka se dobře překládá jako "a pak...".
+
+Pro vložení pajpy můžeme použít klávesovou zkratku Ctrl Shift M.
+
+```{r manipulace, message = F}
+library(lubridate) # operace s datumy
+
+banany <- potraviny_csv %>% # vytvoříme banány tak, že vezmeme tabulku potravin, a pak...
+  filter(reprcen_txt == "Banány žluté [1 kg]") %>%  # .. nastavíme filtr podle hodnoty, a pak... 
+  group_by(rok = year(obdobido)) %>% #... seskupíme podle roku; year() je v lubridate, a pak...
+  summarise(cena_bananu = mean(hodnota)) # ... vytvoříme sloupec s průměrnou roční cenou
+ 
+banany # ukázat banány...
+
+```
+
+Na 4 řádcích kódu jsme provedli redukci ze 108 tisíc řádků data framu na 13.
+
+Důležitý komentář: vytvořili jsme nový datový objekt (`banany`) ale původní `potraviny_csv` se nezměnil (a už vůbec se nezměnila hodnota podkladového souboru `potraviny.csv` na disku).
+
+## Důležité slovesa z dplyr
+
+- `select()` vybere podle názvu určitý sloupec (nebo sloupce, když je argumentem vektor)
+- `filter()` omezí data frame pouze na řádky, které splňují podmínku (argumentem je výraz, který lze vyhodnotit jako TRUE / FALSE)
+- `mutate()` vytvoří nový sloupec ze stávajícího (či stávajících)
+- `group_by()` seskupí data frame podle hodnot jednoho sloupce (nebo více sloupců, když je argumentem vektor)
+- `summarise()` vytvoří na data framu seskupeném pomocí `group_by()` sumární sloupec, a zahodí ostatní (kromě nového a seskupujících sloupců)
+
+
+```{r dplyr-verbs}
+
+potraviny_csv %>% # vezmeme tabulku potravin, a pak...
+  select(c("uzemi_txt", "obdobiod")) %>% # .. vybereme sloupce uzemi_txt a obdobiod, a pak...
+  head() # ...ukážeme prvních 6 řádků
+
+banany  %>% # vezmeme tabulku ceny banánů po letech, a pak...
+  filter(rok >= 2000 & cena_bananu < 30) # ...vybereme hodnoty od roku 2000 a dále, kdy bylo kilo banánů do 30 Kč
+
+banany  %>% # vezmeme tabulku ceny banánů po letech, a pak...
+  mutate(cena = ifelse(cena_bananu < 30, "nízká", "vysoká")) # ...vytvoříme novou kategorickou proměnnou podle ceny
+```
+Praktické zjednodušení představuje funkce `count()`, která v jedním kroku provede seskupení (`group_by()`) a spočítání hodnot.
+
+```{r count}
+potraviny_csv %>%
+  count(uzemi_txt)
+```
+
+## Normalizace a denormalizace – převod z "dlouhého" na "široký" formát  
+
+Často se setkáváme s potřebou převézt data z normalizovaného ("dlouhého" formátu – hodnoty pod sebou v řádcích s označením typu proměnné) do denormalizovaného ("širokého" formátu – hodnoty ve sloupcích vedle sebe) a nazpátek.
+
+V rámci `tidyverse` pro tento převod slouží funkce `spread()` a `gather()`; `spread()` roztáhne dlouhá data do stran, a `gather()` posbírá široká data pod sebe.
+
+Při použití `spread()` často získáme sloupce s názvy, které nevyhovují – napřiklad obsahují diakritiku, nebo mezery (nebo, jako  v našem případě, obojí). Pro jejich přejmenování můžeme použít funkci `colnames()` do které přiřadíme očekávaný vektor názvů.
+
+
+```{r pivotky}
+
+# začneme vytvořením pomocného objektu alkohol
+alkohol <- potraviny_csv %>% # alkohol vytvoříme tak, že vezmeme potraviny a pak...
+  filter(reprcen_txt %in% c("Jakostní víno bílé [0,75 l]", # vybereme pivo a víno, a pak...
+                            "Pivo výčepní, světlé, lahvové [0,5 l]")) %>% 
+  filter(uzemi_txt == "Česká republika") %>%  # pouze celková čísla (bez regionů), a pak...
+  group_by(rok = lubridate::year(obdobiod), reprcen_txt) %>%  # dopočteme rok, a pak...
+  summarise(prumer = mean(hodnota))
+
+alkohol
+
+siroky <- alkohol %>%  # vytvoříme objekt siroky tak, že vezmeme alkohol, a pak ...
+  spread(key = reprcen_txt, # key = názvy sloupců
+         value = prumer) # hodnoty pro řádky
+  
+glimpse(siroky) # alkohol roztažený do široka; místo chybějící ceny vína je NA
+
+colnames(siroky) <- c("rok", "vino", "pivo") # bez mezer a bez diakritiky
+
+glimpse(siroky) # takhle je to hezčí...
+
+uzky <- siroky %>%  # vytvoříme objekt uzky tak že vezmeme objekt siroky, a pak...
+  gather(key = "potravina", # název nové proměnné pro bývalé sloupce
+         value = "cena", # název nové proměnné pro bývalé řádky
+         -rok,  # hodnota sloupce, na který se posbírání neuplatní (proto mínus)
+         na.rm = T) # chybějící hodnoty (NAčka) potlačíme
+
+
+uzky # jako původní alkohol, liší se jen názvy sloupců a setříděním
+
+```
+
+
+## Spojení data framů podle klíče
+
+Klíčový úkol při práci s data framy je jejich propojování. V kontextu `dplyr` package jde zejména o funkce `left_join()` a `inner_join()`, inspirované SQL funkcemi obdobných jmen.
+
+- `left_join()` vrací všechny záznamy z levé strany, a k nim přidá ty záznamy z pravé strany, pro které je hodnota klíče shodná. Je zaručeno, že na levé straně nepřijdete o žádná data, ale může dojít ke zdvojení řádek v případě vícečetné shody. Z pravé strany se nemusí připojit všechny záznamy, a naopak ne všechny záznamy z levé strany musí najít svůj ekvivalent. V takovém případě bude místo hodnoty zprava `NA`.
+- `inner_join()` záznamy zafiltruje. Vrací pouze záznamy, které se vyskytují na obou stranách (tj. není zaručeno, že nepřijdete o záznamy).
+
+```{r joiny}
+
+mrkev <- potraviny_csv %>% # vytvoříme mrkev tak, že vezmeme tabulku potravin, a pak...
+  filter(reprcen_txt == "Mrkev [1 kg]") %>%  # ... vybereme mrkev (jako prve banány), a pak... 
+  group_by(rok = year(obdobido)) %>% #... seskupíme podle roku; year() je v lubridate, a pak...
+  summarise(cena_mrkve = mean(hodnota)) %>% # ... vytvoříme sloupec s průměrnou roční cenou, a pak...
+  filter(rok %% 2 == 1) #... vybereme pouze liché roky (zbytek po celočíselném dělení = 1)
+
+mrkev # nakonec se na mrkev podíváme
+
+banany %>% # vezmeme banány, a pak...
+  left_join(mrkev, by = c("rok", "rok")) # ...připojíme mrkev, a ukážeme všechny hodnoty
+
+banany %>% # vezmeme banány, a pak...
+  inner_join(mrkev, by = c("rok", "rok")) # ...připojíme mrkev, a ukážeme pouze hodnoty shodné 
+ 
+```
+
+# Spojení dvou data framů
+
+Dva data framy jde spojit voláním:
+
+- `rbind()` = spojení po řádcích (pod sebe)
+- `cbind()` = spojení po sloupcích (vedle sebe)
+
+Při spojení po řádcích je potřeba, aby oba data framy měly stejný počet sloupců (řádky se mohou lišit) stejného typu.
+
+Při spojení po sloupcích je třeba dát pozor na recyklaci vektorů (při nestejném počtu řádků se opakují hodnoty).
+
+```{r kockopes}
+
+kockopes <- rbind(head(potraviny_csv), # napřed hlava = prvních 6 řádků
+                  tail(potraviny_csv)) # potom ocas = posledních 6 řádků
+
+kockopes # 12 (6+6) řádků; 11 = původní počet sloupců
+
+kockopes <- cbind(head(potraviny_csv), # napřed hlava = prvních 6 řádků
+                  tail(potraviny_csv)) # potom ocas = posledních 6 řádků
+
+kockopes # 6 = původní počet řádků; 22 (11+ 11) sloupců
+
+```
+
+
+# Další čtení / reference
+
+* [Data Transformation](https://github.com/rstudio/cheatsheets/raw/master/data-transformation.pdf) cheatsheet od RStudia  
+* [package dplyr](https://dplyr.tidyverse.org/) dokumentace  
+* [package tidyr](https://tidyr.tidyverse.org/) dokumentace  
+* [package dbplyr](https://dbplyr.tidyverse.org/) dokumentace   
+* [package lubridate](https://lubridate.tidyverse.org/) dokumentace  
+* [Data Trasnsformation](https://r4ds.had.co.nz/transform.html) kapitola R for Data Science  

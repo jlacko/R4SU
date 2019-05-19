@@ -1,0 +1,103 @@
+---
+title: "Krok nultý"
+description: "instalace & nastavení – prostředí, projekty, package"
+author: "Jindra Lacko"
+date: '2019-05-01'
+output:
+  blogdown::html_page:
+    toc: true
+slug: R4SU-environment-setup
+categories:
+  - R4SU
+tags: []
+---
+
+# Instalace 
+
+Rozhodli jste se pracovat v erku; gratuluji! Vaším prvním krokem budou logicky instalace. Instalace v množném čísle, protože musí proběhnout minimálně dvě: samotné erko (běží na pozadí, případně příkazové řádce) a vývojové prostředí (IDE) pro vlastní práci. 
+
+K tomu je třeba přidat instalaci rozšiřujících packagí a podpůrných programů.
+
+### Instalace erka jako jazyka
+
+Erko jako jazyk na svém prostředí nainstalujete ze stránek https://cran.rstudio.com/index.html – ale takto holá instalace je v praxi použitelná jen ve zcela výjimečných případech.
+
+Reálně budete potřebovat vývojové prostředí – IDE. Není to dogma, ale doporučuji [RStudio](https://www.rstudio.com/).
+
+### Instalace RStudia jako vývojového prostředí
+
+RStudio je de-facto standardem pro erkové IDE; nainstalujete jej ze stránek https://www.rstudio.com/products/rstudio/download/#download.
+
+### Instalace doplňujících packagí
+
+Rozšiřující balíček nainstalujete v rámci erka příkazem `install.packages()` kde argumentem je jméno package. 
+
+Packagí je v erku mnoho (fun fact: aktuální počet dostupných balíčků zjistíte na příkazové řádkce pomocí `nrow(available.packages())` – je to *hodně* přes deset tisíc).
+
+Pro svojí práci z nich budete potřebovat zlomek – "jen" desítky až stovky balíčků.
+
+Balíčky potřebné pro tento kurz nainstalujete spuštěním následujícího kódu (v této fázi mu není třeba rozumět, stačí zkopírovat a spustit):
+
+```{r instalace-packagi, eval = F}
+# toto potřebuju:
+required <- c("installr", "tidyverse", "curl", "readxl", "DBI", "RPostgreSQL", 
+              "dbplyr", "lubridate", "scales", "sf", "RCzechia")
+# toto mám:
+installed <- installed.packages()[, 1]
+
+# a tedy rozdíl stahnu z CRANu...
+install.packages(setdiff(required, installed))
+```
+
+Je normální, že stažení těchto packagí vyvolá stažení dalších packagí (a tak dál). Rovněž je normální, že stažení a instalace chvíli potrvá.
+
+### Instalace podpůrných programů
+
+Základní podpůrný program pro RStudio je verzovací systém Git.
+
+S Gitem získáte možnost ukládat erkové skripty do verzovacího repozitáře, jako je třeba GitHub. Pokud jste na Windows, a máte nainstalovanou package `installr` (viz. bod výše) tak pro instalaci gitu stačí příkaz `installr::install.git()`, který vyřeší ostatní. Na Unixovém prostředí `installr` nefunguje, ale pro uživatele Unixu by instalace Gitu neměla být nerozlousknutelným oříškem.
+
+
+# RStudio nastavení
+
+Možností nastavení v RStudiu je mnoho; dostanete se k nim volnou Tools / Global Options.
+
+Pro většinu nastavení platí, že defaultní hodoty jsou dobrou volbou. Výjimku představuje ukládání prostředí. Důrazně doporučuji nikdy neukládat, ani automaticky neobnovovat, prostředí (Workspace) ani historii (History). To znamená nastavit ukládání workspace na None a odškrtnout všechny chlívečky ve Workspace a History sekci.
+
+
+<p align="center">
+  <img src="http://github.com/jlacko/R4SU/blob/master/img/global-settings.png?raw=true" alt="Global Settings"/>
+</p>
+
+Takto zajistíte, že při startu a restartu erka budete začínat se zcela čistou pamětí, a občas budete moci "setřít tabuli" tím, že provedete restart erka na pozadí (volba Session / Restart R).
+
+Dobrovolné, ale za mě doporučené, nastavení je úprava fontů z defaultu na [Fira Code](https://github.com/tonsky/FiraCode) – Fira Code v sobě má programátorské ligatury, takže některé v erku používané operátory spojuje jedním znakem místo dvou – znamená to například, že na obrazovce uvidíte `<-` místo znaků `<` a `-` vedle sebe. Není to povinné, ale pracuje se tak líp.
+
+Nastavení fontu je pod Tools / Global Options / sekce Appearance (kyblík s barvou) a Fira Code je třeba před použitím nainstalovat podle instrukcí https://github.com/tonsky/FiraCode/wiki.
+
+# RStudio projekty
+
+Erkové skripty můžete spouštět obecně kdekoliv. To ale není recept na pořádek. RStudio proto nastavuje koncept "projektů" jako uzavřených celků s určitým cílem. Projekt tvoří skripty, podkladová data a dokumentace, které spolu "bydlí" v jednom adresáři a mají společné nastavení v souboru s koncovkou `*.Rproj`.  
+
+Pro lepší uspořádání projektů doporučuji jejich členění do podadresářů. Není to povinné, ale orientaci to pomahá. Doporčuji podadresáře:
+
+- `code` pro skripty  
+- `data` pro pracovní data (měněná během výpočtů)
+- `data-raw` pro zdrojová data (jen pro čtení)
+- `img` pro vygenerované obrázky
+
+Nový projekt vytvoříte buď volbou File / New project..., případně kliknutím na ikonku erka v šestiúhelníku na horní liště.
+
+<p align="center">
+  <img src="http://github.com/jlacko/R4SU/blob/master/img/create-project.png?raw=true" alt="Create Project"/>
+</p>
+
+
+Jako odměnu vám nabízím k vyklonování projekt R4SU = R for Spreadsheet Users / kurs erka pro uživatele tabulek.
+
+Získáte ho tak, že při tvorbě nového projektu jako zdroj zvolte Version Control / Git  a coby cestu k repozitáři zadáte `https://github.com/jlacko/R4SU.git`. Získáte tak na svém počítači akutální kopii všech školicích materiálů.
+
+# Další čtení / reference
+
+* [RStudio IDE](https://github.com/rstudio/cheatsheets/raw/master/rstudio-ide.pdf) cheatsheet od RStudia  
+* [Introduction](https://r4ds.had.co.nz/introduction.html#prerequisites) kapitola R for Data Science  

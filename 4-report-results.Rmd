@@ -1,0 +1,299 @@
+---
+title: "Krok čtvrtý"
+description: "podání výsledků – ggplot, geomy a estetiky"
+author: "Jindra Lacko"
+date: '2019-05-05'
+output:
+  blogdown::html_page:
+    toc: true
+slug: R4SU-report-results
+categories:
+  - R4SU
+tags: []
+---
+
+
+```{r setup, message = F}
+# Začneme iniciací prostředí.
+
+library(tidyverse)
+
+# pokud soubory neexistují lokálně - stahnout!
+if (!file.exists('./data/potraviny.csv')) {
+  curl::curl_download("https://www.jla-data.net/sample/R4SU-potraviny.csv", 
+                      "./data/potraviny.csv")
+}
+
+# lokální soubor načíst
+potraviny_csv <- readr::read_csv2("./data/potraviny.csv")
+```
+
+# Grafický výstup – tidyverse / ggplot2
+
+Základní grafická knihovna v rámci `tidyverse` je `ggplot2`. Zkratka gg představuje anglické [Grammar of Graphics](https://vita.had.co.nz/papers/layered-grammar.pdf), dvojka na konci znamená, že se jedná o v pořadí druhý pokus (první se nezadařil).
+
+Významný rozdíl proti zbytku `tidyverse` představuje, že jednotlivé operace bloku ggplotu nejsou pospojovány pajpou (`%>%`) ale sčítáním (`+`). Důvody jsou především historické (ggplot je starší, než koncept pajpy).
+
+Sčítání místo pajp má řadu důsledků, například to že řádky v bloku `ggplot2` jsou komutativní, a tedy nezávislé na pořadí (což pro pajpy v `dplyr` neplatí). 
+
+
+## Grammar of Graphics
+
+Grafická gramatika představuje set pravidel, které staví obrázek ze základních kamenů:  
+
+- podkladových dat
+- geometrických objektů (body, čáry, sloupce...)
+- osy (spojité či diskrétní, převrácené či logaritmické)
+- souřadnicových systémů (kartézský, polární, zeměpisný)
+- popisků a titulků
+- facetů (dílčích grafů)
+- animace (v rozšířeních ggplotu)
+
+## Základy ggplotu
+
+`ggplot2` je obecný, a tedy složitý, nástroj. Má smysl začít s jednoduchými grafy, a ke složitějším se propracovat.
+
+Základem volání je funkce `ggplot`, které předáme jako argument dataset, a vnoříme funkci `aes()`, která upravuje vzhled (estetiku, anglicky aesthetic) – typicky určí, jak namapovat osy a barvy. Dále je třeba přidat některý z geometrických objektů.
+
+Estetiky, které je možné pro grafy definovat, jsou:
+
+- souřadnice (x a y)
+- barva (color – pro body a čáry jediná barva, pro polygony a koláče barva okraje)
+- tvar (shape – pouze pro body)
+- výplň (fill – pouze pro polygony a koláče)
+- průsvitnost (alpha)
+
+
+Pro začátek si připravíme data frame ročních průměrů ceny základních potravin – tedy piva a vína. 
+
+```{r zakladni-potraviny}
+
+alkohol <- potraviny_csv %>% # vytvoříme objekt alkohol tak, že vezmeme potraviny a pak ...
+  filter(reprcen_txt %in% c("Jakostní víno bílé [0,75 l]", # vybereme pivo a víno, a pak...
+                            "Pivo výčepní, světlé, lahvové [0,5 l]")) %>% 
+  filter(uzemi_txt == "Česká republika") %>%  # pouze celková čísla (bez regionů), a pak...
+  group_by(rok = lubridate::year(obdobiod), reprcen_txt) %>%  # dopočteme rok, a pak ...
+  summarise(prumer = mean(hodnota))
+
+```
+
+V prvním ggplotu zadáme dataset (`data = ...`), a v `aes()` funkci nastavíme proměnné pro osy x a y. Doplníme funkci `geom_point()` pro bodový graf.
+
+```{r ggplot-body, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer)) +
+  geom_point()
+
+```
+
+Graf má jednu velkou vadu – není poznat, které hodnoty představují pivo, a které víno. 
+
+Pro rozlišení musíme využít namapovat sloupec `reprcen_txt` na některou z estetik. Smysl dávají dvě: tvar bodu (shape) a barva.
+
+```{r ggplot-body-shape, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, shape = reprcen_txt)) +
+  geom_point()
+
+```
+```{r ggplot-body-color, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_point()
+
+```
+
+Pokud se nám defaultní barvy nelíbí (což se může stát) tak upravíme paletu. Například na oblíbenou paletu paní Cynthie Brewer.
+
+```{r ggplot-body-brewer, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_point() +
+  scale_color_brewer(palette = "RdYlBu")
+
+```
+
+Čáry z bodů uděláme záměnou geomu z point na line.
+
+```{r ggplot-line-thin, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_line() +
+  scale_color_brewer(palette = "RdYlBu")
+
+```
+
+Tlustší čáru získáme upřesněním šířky čáry (lwd = line width) v rámci `geom_line()`.
+
+```{r ggplot-line-thick, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_line(lwd = 2) +
+  scale_color_brewer(palette = "RdYlBu")
+
+```
+
+Geom typu col zařídí sloupcový graf. Pozor, musíme také změnit barvu z color (znamená barvu okraje) na fill (znamená výplň).
+
+Default pro sloupcový graf jsou sloupce na sobě.
+
+```{r ggplot-col-stacked, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, fill = reprcen_txt)) +
+  geom_col() +
+  scale_fill_brewer(palette = "RdYlBu")
+
+```
+
+Sloupcový graf se sloupečky vedle sebe získáme upřeněním `position = "dodge"` při volání `geom_col()`
+
+```{r ggplot-col-dodge, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, fill = reprcen_txt)) +
+  geom_col(position = "dodge") +
+  scale_fill_brewer(palette = "RdYlBu")
+
+```
+
+Správný graf potřebuje nadpis; vytvoříme ho pomocí `labs()` jako labels.
+
+```{r ggplot-point-nadpis, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_point() +
+  scale_color_brewer(palette = "RdYlBu") +
+  labs(title = "Vývoj cen")
+```
+
+Osy a legenda jsou defaultně nadepsány názvem proměnné; to jde opět změnit voláním `labs()`.
+
+```{r ggplot-point-nadpisy, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_point() +
+  scale_color_brewer(palette = "RdYlBu") +
+  labs(title = "Vývoj cen",
+       x = "Rok měření",
+       y = "Průměrná cena v Kč",
+       color = "Základní životní jistoty")
+```
+
+Graf, který nezačíná osu Y na nule si říká o malér. Rozsah osy Y natvrdo vynutíme uvedením horní a dolní meze do `ylim()`; pro osu X by to bylo `xlim()`.
+
+```{r ggplot-point-limity, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_point() +
+  scale_color_brewer(palette = "RdYlBu") +
+  labs(title = "Vývoj cen",
+       x = "Rok měření",
+       y = "Průměrná cena v Kč",
+       color = "Základní životní jistoty") +
+  ylim(0, 115)
+```
+
+Někomu může nevyhovovat šedé pozadí grafu. Odstraníme ho nastavením tématu – `theme_*`. Zde `theme_linedraw()`. Protože by světle žlutá nebyla na bílém pozadí vidět tak nastavíme barvy ručně.
+```{r ggplot-point-theme, out.width = '100%'}
+ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
+  geom_point() +
+  scale_color_manual(values = c("Jakostní víno bílé [0,75 l]" = "goldenrod2",
+                                "Pivo výčepní, světlé, lahvové [0,5 l]" = "cornflowerblue"))+
+  labs(title = "Vývoj cen",
+       x = "Rok měření",
+       y = "Průměrná cena v Kč",
+       color = "Základní životní jistoty") +
+  ylim(0, 115) +
+  theme_linedraw()
+```
+
+Často použijeme osu časovou, k tomu nám pomůže vánoční kapr. Je patrné, že zatímco cenu piva sledují statistici měsíčně, tak cenu kapra pouze 1x ročně před Vánoci.
+
+Na časové ose je třeba upravit interval popisků (`date_breaks`) a jejich formát; symbol `%m` znamená číslo měsíce a `%Y` čtyřmístný rok.
+
+Abychom zpřehlednili překrývající se hodnoty, tak v `geom_point()` nastavíme průhlednost (`alpha`) a body mírně rozhážeme do stran (`position = "jitter"`).
+
+V obchodním prostředí často využijeme možnost osy s popisky měn. Slouží k tomu funkce `dollar_format()` z knihovny `scales`.
+
+```{r kapr, message = F, out.width = '100%'}
+library(scales)
+
+kapr <- potraviny_csv %>% 
+  filter(reprcen_txt %in% c("Kapr živý [1 kg]", "Pivo výčepní, světlé, lahvové [0,5 l]")
+         & uzemi_txt != "Česká republika"
+         & obdobiod >= "2017-06-01" 
+         & obdobiod <= "2018-12-31") 
+
+ggplot(kapr, aes(x = obdobiod, y = hodnota, color = reprcen_txt)) +
+  geom_point(alpha = 0.5, position = "jitter") +
+  scale_color_manual(values = c("goldenrod2", "cornflowerblue")) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%m – %Y") + # rozteč a formát popisků
+  scale_y_continuous(limits = c(0, 115), # omezení hodnot (aby byla vidět nula)
+                     labels = dollar_format(prefix = "", suffix = " Kč")) +  # měnový formát popisků
+  labs(title = "Pivo a kapr",
+       x = "Měsíc měření",
+       y = "Průměrná cena",       
+       color = "Základní životní jistoty") +
+  theme_linedraw() +
+  theme(axis.text.x = element_text(angle = 90)) # popisky na výšku, aby se vešly
+
+
+```
+
+Koláčové grafy se v erkových kruzích moc nenosí (obdobně jako grafy se dvěma osami) ale prostředí obchodu je občas vyžaduje.
+
+V ggplotu2 jsou koláčové grafy implementované jako sloupcové grafy v polárních souřadnicích místo kartézských (tj. "zatočené do kolečka"). Zatímco karteziánské souřadnice jsou definovány dvěma vzdálenostmi (osa x a y), polární souřadnice jsou definovány vzdáleností a úhlem (théta), který je třeba namapovat v rámci volání `coord_polar()`.   
+
+```{r pie-chart, message = F, out.width = '100%'}
+
+
+silvestr <- potraviny_csv %>% 
+  filter(reprcen_txt %in% c("Kapr živý [1 kg]", 
+                            "Pivo výčepní, světlé, lahvové [0,5 l]", 
+                            "Jakostní víno bílé [0,75 l]")
+         & uzemi_txt == "Česká republika"
+         & obdobiod >= "2018-12-01" 
+         & obdobido <= "2019-01-01") 
+
+ggplot(data = silvestr, aes(x = "", # souřadnice x se nepoužije (ale musí být)
+                            y = hodnota, # cena jako hodnota
+                            fill = reprcen_txt, # potravina jako barva
+                            label = hodnota)) + # cena jako popisek
+  geom_col() + # sloupcový graf ...
+  coord_polar(theta = "y") + # ... zatočený do kolečka
+  geom_text(position = position_stack(vjust = 0.5)) + # popisky na střed
+  scale_fill_brewer(palette = "RdYlBu") + # barvičky paní Brewer
+  labs(title = "Vánoční spotřební koš", # název grafu
+       fill = "Základní potravina") + # název legendy
+  theme_void() # téma bez příkras
+
+```
+
+
+Mapovou vizualizaci vytvoříme tak, že data o ceně kapra v regionech připojíme k prostorovému objektu krajů České republiky. Tyto jsou k dispozici v package `RCzechia`, která obsahuje administrativní regiony ČR od obcí přes ORP, okresy a kraje až k ČR jako celku, včetně klíčů do číselníků používaných statistickým úřadem.
+
+Práce s mapami vyžaduje kromě `RCzechia` také knihovnu `sf`, která definuje objekty mapových vektorových dat a práci s nimi. Vždy je třeba připojovat data k mapě, ne mapu k datům.
+
+Z grafu je se zdá, že cena českého kapra je přímo úměrná vzdálenosti od Třeboně. To dává smysl.
+
+```{r krajsky-kapr, message = F, warning = F, out.width = '100%'}
+library(sf)       # umožňuje práci s prostorovými daty
+library(RCzechia) # prostorová data ČR - obsahuje kraje()
+
+kapr <- potraviny_csv %>% # přepíšeme objekt kapr tím, že vezememe potraviny, a pak..
+  filter(reprcen_txt %in% c("Kapr živý [1 kg]")   # vybereme kapra,
+         & uzemi_txt != "Česká republika"         # pouze regionální hodnoty (tj. ne ČR jako celek)
+         & lubridate::year(obdobido) == 2017) %>% # pouze hodnoty z roku 2017, a pak...
+  mutate(uzemi_kod = as.character(uzemi_kod)) # převedeme kód území z čísla na text (klíče RCzechia jsou text)
+
+krajsky_kapr <- kraje("low") %>%   # objekt krajsky_kapr vytvoříme tak, že vezmeme mapu krajů, a pak...
+  inner_join(kapr, by = c("KOD_KRAJ" = "uzemi_kod")) # k nim připojíme podle klíče objekt kapr
+
+ggplot(data = krajsky_kapr, aes(fill = hodnota)) +
+  # geom_sf() ukazuje mapu; vyžaduje načtenou knihovnu sf
+  geom_sf() + 
+  # geom_sf_text() nakreslí na mapě popisky
+  geom_sf_text(aes(label = round(hodnota)), color = "grey25") + 
+  # škála barev od žluté po červenou, bez legendy (popisek stačí...)
+  scale_fill_gradient(low = "yellow", high = "firebrick2", guide = "none") + 
+  labs(title = "Český kapr v roce 2017",  # nadpis grafu
+       subtitle = "průměrná cena v Kč po krajích") + # podtitulek
+  theme_void() +
+  coord_sf(datum = NA)
+
+```
+# Další čtení / reference
+
+* [Data Visualization](https://github.com/rstudio/cheatsheets/raw/master/data-visualization-2.1.pdf) cheatsheet od RStudia  
+* [package ggplot2](https://ggplot2.tidyverse.org/) dokumentace  
+* [package scales](https://scales.r-lib.org/) dokumentace  
+* [package RCzechia](https://cran.r-project.org/web/packages/RCzechia/vignettes/vignette.html) vignette  
+* [Data Visualization](https://r4ds.had.co.nz/data-visualisation.html) kapitola R for Data Science  

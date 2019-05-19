@@ -1,0 +1,246 @@
+---
+title: "Krok první"
+description: "operace a struktury – proměnné, rovnítka a dolary"
+author: "Jindra Lacko"
+date: '2019-05-02'
+output:
+  blogdown::html_page:
+    toc: true
+slug: R4SU-data-structures
+categories:
+  - R4SU
+tags: []
+---
+
+## Vytvoření a odstranění objektu 
+
+Erkové objekty jdou vytvořit dvěma způsoby: 
+
+* operátorem přiřazení (`<-`)
+* jedním rovnítkem (`=`)
+
+Ačkoliv jsou tyto operátory mezi sebou zpravidla zaměnitelné, platí úzus, že pro vytváření objektů používáme operátor `<-` a rovnítko používáme pouze pro specifikaci parametrů funkcí jménem (tj. pouze uvnitř kulatých závorek).
+
+Operátor jedno rovnítko (`=`) značící přiřazení je třeba odlišovat od operátoru dvě rovnítka (`==`), značící porovnání rovnosti. 
+
+Operátor jedno rovnítko přiřadí do proměnné na levé straně hodnotu z pravé strany. Operátor dvě rovnítka mezi sebou porovná hodnoty na levé a pravé straně, a o výsledku podá zprávu. V případě rovnosti vrátí TRUE, v případě nerovnosti FALSE.
+
+```{r operatory}
+
+jedna <- 1 # proměnné "jedna" přiřadíme hodnotu 1 šipkou
+jedna # zobrazit obsah proměnné jedna
+
+jedna = 1 # proměnné "jedna" přiřadíme hodnotu 1 rovnítkem
+# a nic nezobrazíme, takže se nic neukáže
+
+jedna == 1 # hodnotu proměnné "jedna" porovnáme s jedničkou (výsledek = pravda)
+
+```
+
+Pro zničení objektů máme dvě možnosti:
+
+- cíleně odstranit konkrétní objekt voláním `rm()` s objektem jako argumentem
+- restartovat R (z R Studia přes menu Session / Restart R)
+
+Restartování R zničí všechny objekty v paměti, a je třeba je vytvořit znovu spuštěním skriptů. To může být praktické v okamžiku, kdy jsme objekty v paměti upravovali (například z příkazové řádky) a chceme ověřit správnost skriptu jako celku.
+
+```{r sauber-machen}
+rm(jedna) # odstraním objekt jedna
+
+# a nyní nepůjde zavolat...
+
+```
+
+## Datové typy
+
+Základní datové typy má erko tři:
+
+- číslo (numeric)
+- text (character)
+- logickou hodnotu (logical)
+
+Existuje ještě jemnější členění čísel na celá čísla (integer), reálná (double) a komplexní (complex); v naprosté většině případů ho můžeme zanedbat (erko převod typů zařídí na pozadí). 
+
+U čísel přitom platí, že jako desetinný oddělovač se používá výradně tečka. Čárka má vlastní význam a za tečku zaměnit nejde.
+
+Navíc k základním typům existují dva speciální datové typy:
+
+- kategorické proměnné (factor)
+- uspořádané kategorické proměnné (ordered factor)
+
+Typický příklad kategorické proměnné je pohlaví. Pohlaví můžeme definovat jako mužské, ženské a jiné, přičemž nemá smysl uvažovat o tom že jedno z nich by bylo víc (nebo míň) než druhé.
+
+Typický příklad uspořádané kategorické proměnné je spokojenost. Spokojenost můžeme definovat jako malou, střední či velkou. Následně můžeme uvažovat o tom, že spokojenost velká > střední > malá, ale už nejde pracovat s tím že velká spokojenost = 2 × střední.
+
+S kategorickými proměnnými se často setkáváme při importu (stringsAsFactors) a při tvorbě grafických výstupů (pořadí sad v legendě grafu).
+
+Navíc existují speciální hodnoty:
+
+- `NA` (Not Available) = neznámá hodnota
+- `NULL` = prázdná / neexistující hodnota
+- `NaN` = hodnota, která není číslo (v místě, kde se číslo očekává)
+- `Inf` = nekonečno (například jako výsledek dělení nulou)
+
+Ze speciálních hodnot je nejpoužívanější NA, často se na ní ptáme funkcí `is.na()`.
+
+## Datové struktury
+
+### Skalár / jednorozměrná proměnná
+
+Skalární proměnnou vytvoříme přiřazením pomocí operátoru `<-`, typ zpravidla dopředu nedeklarujeme.
+
+```{r skalar}
+
+cislo <- 1
+cislo
+
+text <- "Máma má mísu"
+text
+
+logi <- TRUE
+logi
+
+```
+
+### Vektor
+
+Vektor hodnot stejného základního datového typu vytvoříme funkcí `c()`. 
+
+K jednotlivým hodnotám přistupujeme přes hranaté závorky a index. Platí přitom, že index se počítá od jedničky (první prvek má číslo 1, ne nula); pro některé uživatele (programátory) to může být nezvyk...
+
+Hranatá závorka se na české klávesnici napíše jako pravý Alt + F, respektive pravý Alt + G.
+
+```{r vektor}
+
+cislo <- c(10, 20, 30)
+cislo[3]
+
+text <- c("Máma", "má", "mísu")
+text[1]
+
+logi <- c(TRUE, FALSE, TRUE)
+logi[2]
+
+```
+
+Číselný vektor můžeme vytvořit jako sekvenci pomocí operátoru dvojtečka, případně funkcí `seq()`, která nám dává více možností kontroly.
+
+```{r dvojtecka}
+jedna_az_pet <- 1:5
+jedna_az_pet
+
+trig <-  seq(from = 0, to = 2 * pi, by = pi / 8)
+trig
+```
+
+### Vektorové operace
+
+S vektory jdou provádět stejné operace jako se skaláry, s tím že se provedou s každým prvkem vektoru zvlášť.
+
+```{r vektorove-operace}
+
+jedna_az_pet <- 1:5
+jedna_az_pet * 2 # výstup = stejně dlouhý vektor, každý prvek dvojnásobný
+
+sest_az_deset <- 6:10
+jedna_az_pet + sest_az_deset # první z prvního + první z druhého vektoru
+
+slova <- c("máma", "táta", "bába") # textový vektor
+paste(slova, "má mísu") # paste() = spojení textových řetězců
+
+```
+
+Pro spojení dvou vektorů nefunguje operátor `+` (ten by sečetl první s prvním, druhý s druhým prvkem při zachování délky) ale použije se `c()` (zkráceně pro concatenate = spojení) jako při vytváření vektoru
+
+```{r spojeni-vektoru}
+jedna_az_deset <- c(jedna_az_pet, sest_az_deset)
+jedna_az_deset
+
+```
+
+
+
+### Recyklace (pozor na ní)
+
+Erko má v sobě zabudovanou recyklaci vektorů – což v praxi znamená, že když potřebuje pracovat s vektory nestejné délky, tak si kratší vektor "natáhne" zopakováním hodnot. 
+
+```{r recyklace-I}
+
+papir <- c(1:16) # vektor papir = sekvence od jedničky do patnáckty
+
+plast <-  papir * c(1, 0) # plast = lichý "papír" ×1, sudý ×0
+
+plast 
+
+```
+Někdy se to může hodit – jako v zde citovaném příkladu, kdy násobením dlouhého a krátkého vektoru vynulujeme všechny sudé hodnoty – ale zpravidla to není očekávaný stav. 
+
+Uvažujme příklad, kdy bychom chtěli sečíst dva vektory – dlouhý s 10 prvky a krátký se dvěma prvky; očekávali bychom tedy změnu na první a druhé pozici, ale od třetího prvku dál pouze hodnoty z delšího vektoru. To se ale nestane.
+
+Aby k tomu došlo je třeba uplatnit "prokrustovu transoformaci" a kratší vektor dorovnat nulami na délku delšího vektoru.
+
+```{r recyklace-II}
+
+dlouhy <- 1:10
+kratky <- c(10, 20)
+
+dlouhy # vektor s deseti prvky
+kratky # vektor se dvěma prvky
+
+# krátký vektor se použije 5x
+dlouhy + kratky
+
+# prokrustova transformace - nuly v délce rozdílu délek
+kratky <- c(kratky,
+            rep(0, length(dlouhy) - length(kratky)))
+
+kratky # vektor dříve krátký má 10 prvků (jako dlouhý)
+
+# "krátký" vektor se použije jen 1x
+dlouhy + kratky
+
+```
+
+### Data Frame
+
+Základním tabulkovým objektem je data frame. Lze ho chápat jako pospojované vektory, ve kterých sloupce (vždy s hodmotami stejnoho datového typu) představují proměnné, a řádky (nikoliv nutně stejného datového typu) představují pozorování.
+
+Data frame vytvoříme pomocí funkce `data.frame()` nebo (častěji) načtením z externího zdroje.
+
+Sloupce (proměnné) mohou být teoreticky jak ASCII tak UTF-8, ale prakticky volíme pouze ASCII názvy (k UTF-8 názvům je potřeba přistupovat přes uvozovky, což je mimořádně nepohodlné).
+
+```{r data-frame-I}
+
+pocty <- data.frame(cislo = c(1, 2, 3, 4, 5, 6),
+                    CZ = c("jedna", "dva", "tři", "čtyři", "pět", "šest"),
+                    EN = c("one", "two", "three", "four", "five", "six"),
+                    LA = factor(c("unus", "duo", "tres", "quattuor", "quinque", "sex")),
+                    stringsAsFactors = F)
+
+pocty
+
+```
+
+K jednotlivým hodnotám přistupujeme buď přes hranaté závorky a index sloupce a řádku, nebo přes dolar (`$`) a název sloupce – v takovém případě je výstupem sloupec jako vektor.
+
+Dolar se na české klávesnici napíše jako pravý Alt + ů.
+
+```{r data-frame-II}
+
+pocty[4, 4] # čtvrtý řádek, čtvrtý sloupec (1 hodnota)
+
+pocty[2:3, ] # druhý až třetí řádek (podmnožina data framu)
+
+pocty[ , 3] # celý třetí sloupec (jako vektor)
+
+pocty$CZ # sloupec CZ jako vektor
+
+pocty$CZ[2:3] # druhá až třetí hodnota vektoru CZ
+
+```
+
+# Další čtení / reference
+
+* [Base R](http://github.com/rstudio/cheatsheets/raw/master/base-r.pdf) cheatsheet od RStudia  
+* [An introduction to R](https://cran.rstudio.com/doc/manuals/r-release/R-intro.html) – od CRAN, spíše techničtější...  
+* [Workflow Basics](https://r4ds.had.co.nz/workflow-basics.html) kapitola R for Data Science  
