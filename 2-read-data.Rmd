@@ -13,7 +13,7 @@ tags: []
 ---
 
 
-Používaných externích zdrojů dat je mnoho; tři nejčastějši používané jsou:
+Používaných externích zdrojů dat je mnoho; tři nejčastější používané jsou:
 
 - csv soubory
 - soubory Microsoft Excel
@@ -51,9 +51,9 @@ Formát CSV ([comma separated values](https://cs.wikipedia.org/wiki/CSV)) je nej
 Má dvě základní mutace 
 
 - hodnoty oddělené *čárkami* (s desetinným oddělovačem *tečkou* – používána zejména v USA) a 
-- hodnoty oddělené *středníkem* (s desetinným oddělovačem *čárkou* – používáné v ČR a dalších evropských zemích).
+- hodnoty oddělené *středníkem* (s desetinným oddělovačem *čárkou* – používané v ČR a dalších evropských zemích).
 
-Pro načtení dat s oddělovačem čárka platí fukce `read.csv()` v base R, a `readr::read_csv()` z širšího `tidyverse`, kterou doporučuji. 
+Pro načtení dat s oddělovačem čárka platí funkce `read.csv()` v base R, a `readr::read_csv()` z širšího `tidyverse`, kterou doporučuji. 
 
 Pro načtení dat s oddělovačem středník platí funkce `read.csv2()` v base R, a `readr::read_csv2()` z širšího `tidyverse`, kterou doporučuji.
 
@@ -120,7 +120,7 @@ glimpse(potraviny_sql)
 
 # Pár slov k češtině
 
-Erko je aplikace, běží na konkrétním operačním systému (zejména Windows, macOS a Linux). Ten se primárně stará o kódování textu (tj. češtinu). Rozhraní mezi erkem a systémem je obecně zranitelné místo, ne vždy se od něj daří uživatele odstínit na pozadí. Tehdy se hodí konverzní funkce.  
+Erko je aplikace, běží na konkrétním operačním systému (zejména Windows, macOS a Linux). Ten (a nikoliv erko samo) se má primární zodpovědnost za kódování textu (tj. češtinu). Rozhraní mezi erkem a systémem je obecně zranitelné místo, ne vždy se od něj daří uživatele odstínit na pozadí. Tehdy se hodí konverzní funkce.  
 
 Pro práci s mezinárodními znaky používáme knihovnu `stringi`, dvě důležité funkce jsou:
 
@@ -142,7 +142,7 @@ stri_encode(asdf, from = "ISO-8859-2", to = "UTF-8") # takhle to dává větší
 
 Z opatrnosti radím: nepoužívejte non-ASCII znaky ve vlastním kódu (textové řetězce jsou OK) a v názvech souborů, pokud pro to nemáte opravdu vážný důvod.
 
-Dále radím: vždy, když si můžete vybrat, volte pro text kódování unicode (UTF-8). 
+Dále radím: vždy, když si můžete vybrat, volte pro text kódování Unicode (UTF-8). 
 
 # Další čtení / reference
 

@@ -52,7 +52,7 @@ glimpse(potraviny_csv) # počet řádků, výčet sloupců, "ochutnávka" hodnot
 
 - `nrow()` počet řádků data framu
 - `length()` délka vektoru (počet hodnot)  
-- `unique()` výčet unikántních hodnot vektoru 
+- `unique()` výčet unikátních hodnot vektoru 
 - `mean()` průměr hodnot vektoru
 - `sum()` součet hodnot vektoru  
 
@@ -73,9 +73,9 @@ sum(unique(potraviny_csv$uzemi_kod)) # součet unikátních hodnot číselníku 
 
 V rámci `tidyverse` představuje `dplyr` hlavní knihovnu pro manipulaci s tabulkovými daty. Je postaven na konceptu "sloves", která vykonávají určitou činnost nad data framem.
 
-Důležitý koncept představuje pajpa (pipe) `%>%`. Znamená posunutí operátoru na první argument následující funkce. Na první pohled složité, ale ve skutečnosti velmi funční. Do hovorového jazyka se dobře překládá jako "a pak...".
+Důležitý koncept představuje pajpa (pipe) `%>%`. Znamená posunutí operátoru na první argument následující funkce. Na první pohled složité, ale ve skutečnosti velmi funkční. Do hovorového jazyka se dobře překládá jako "a pak...".
 
-Pro vložení pajpy můžeme použít klávesovou zkratku Ctrl Shift M.
+Pro vložení pajpy můžeme použít klávesovou zkratku Ctrl + Shift + m (což je odkaz na package `magrittr` ve kterém byla pajpa prvně představena).
 
 ```{r manipulace, message = F}
 library(lubridate) # operace s datumy
@@ -127,7 +127,7 @@ potraviny_csv %>%
 
 V rámci `tidyverse` pro tento převod slouží funkce `spread()` a `gather()`; `spread()` roztáhne dlouhá data do stran, a `gather()` posbírá široká data pod sebe.
 
-Při použití `spread()` často získáme sloupce s názvy, které nevyhovují – napřiklad obsahují diakritiku, nebo mezery (nebo, jako  v našem případě, obojí). Pro jejich přejmenování můžeme použít funkci `colnames()` do které přiřadíme očekávaný vektor názvů.
+Při použití `spread()` často získáme sloupce s názvy, které nevyhovují – například obsahují diakritiku, nebo mezery (nebo, jako  v našem případě, obojí). Pro jejich přejmenování můžeme použít funkci `colnames()` do které přiřadíme očekávaný vektor názvů.
 
 
 ```{r pivotky}
@@ -222,4 +222,4 @@ kockopes # 6 = původní počet řádků; 22 (11+ 11) sloupců
 * [package tidyr](https://tidyr.tidyverse.org/) dokumentace  
 * [package dbplyr](https://dbplyr.tidyverse.org/) dokumentace   
 * [package lubridate](https://lubridate.tidyverse.org/) dokumentace  
-* [Data Trasnsformation](https://r4ds.had.co.nz/transform.html) kapitola R for Data Science  
+* [Data Transformation](https://r4ds.had.co.nz/transform.html) kapitola R for Data Science  

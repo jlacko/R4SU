@@ -30,11 +30,13 @@ potraviny_csv <- readr::read_csv2("./data/potraviny.csv")
 
 # Grafický výstup – tidyverse / ggplot2
 
-Základní grafická knihovna v rámci `tidyverse` je `ggplot2`. Zkratka gg představuje anglické [Grammar of Graphics](https://vita.had.co.nz/papers/layered-grammar.pdf), dvojka na konci znamená, že se jedná o v pořadí druhý pokus (první se nezadařil).
+Základní grafická knihovna v rámci `tidyverse` je `ggplot2`. Zkratka gg představuje anglické [Grammar of Graphics](https://vita.had.co.nz/papers/layered-grammar.pdf), dvojka na konci znamená, že se jedná o druhý pokus (první se neosvědčil).
 
-Významný rozdíl proti zbytku `tidyverse` představuje, že jednotlivé operace bloku ggplotu nejsou pospojovány pajpou (`%>%`) ale sčítáním (`+`). Důvody jsou především historické (ggplot je starší, než koncept pajpy).
+Významný rozdíl proti zbytku `tidyverse` představuje, že jednotlivé operace bloku ggplotu nejsou pospojovány pajpou (`%>%`) ale sčítáním (`+`).  
 
-Sčítání místo pajp má řadu důsledků, například to že řádky v bloku `ggplot2` jsou komutativní, a tedy nezávislé na pořadí (což pro pajpy v `dplyr` neplatí). 
+Důvody jsou především historické (knihovna ggplot2 je starší, než koncept pajpy v erku).
+
+Sčítání místo pajp má řadu důsledků, například to že řádky v bloku `ggplot2` jsou komutativní, a tedy zpravidla nezávislé na pořadí (což pro pajpy v `dplyr` neplatí). 
 
 
 ## Grammar of Graphics
@@ -57,7 +59,7 @@ Základem volání je funkce `ggplot`, které předáme jako argument dataset, a
 
 Estetiky, které je možné pro grafy definovat, jsou:
 
-- souřadnice (x a y)
+- souřadnice (x a y, ve speciálních případech théta = *θ*)
 - barva (color – pro body a čáry jediná barva, pro polygony a koláče barva okraje)
 - tvar (shape – pouze pro body)
 - výplň (fill – pouze pro polygony a koláče)
@@ -77,7 +79,7 @@ alkohol <- potraviny_csv %>% # vytvoříme objekt alkohol tak, že vezmeme potra
 
 ```
 
-V prvním ggplotu zadáme dataset (`data = ...`), a v `aes()` funkci nastavíme proměnné pro osy x a y. Doplníme funkci `geom_point()` pro bodový graf.
+V prvním ggplotu zadáme dataset (`data = ...`) a v `aes()` funkci nastavíme proměnné pro osy x a y. Doplníme funkci `geom_point()` pro bodový graf.
 
 ```{r ggplot-body, out.width = '100%'}
 ggplot(data = alkohol, aes(x = rok, y = prumer)) +
@@ -138,7 +140,7 @@ ggplot(data = alkohol, aes(x = rok, y = prumer, fill = reprcen_txt)) +
 
 ```
 
-Sloupcový graf se sloupečky vedle sebe získáme upřeněním `position = "dodge"` při volání `geom_col()`
+Sloupcový graf se sloupečky vedle sebe získáme upřesněním `position = "dodge"` při volání `geom_col()`
 
 ```{r ggplot-col-dodge, out.width = '100%'}
 ggplot(data = alkohol, aes(x = rok, y = prumer, fill = reprcen_txt)) +
@@ -195,7 +197,7 @@ ggplot(data = alkohol, aes(x = rok, y = prumer, color = reprcen_txt)) +
   theme_linedraw()
 ```
 
-Často použijeme osu časovou, k tomu nám pomůže vánoční kapr. Je patrné, že zatímco cenu piva sledují statistici měsíčně, tak cenu kapra pouze 1x ročně před Vánoci.
+Často použijeme osu časovou, k tomu nám pomůže vánoční kapr. Je patrné, že zatímco cenu piva sledují statistici měsíčně, tak cenu kapra pouze před Vánoci.
 
 Na časové ose je třeba upravit interval popisků (`date_breaks`) a jejich formát; symbol `%m` znamená číslo měsíce a `%Y` čtyřmístný rok.
 
@@ -262,7 +264,7 @@ Mapovou vizualizaci vytvoříme tak, že data o ceně kapra v regionech připoj�
 
 Práce s mapami vyžaduje kromě `RCzechia` také knihovnu `sf`, která definuje objekty mapových vektorových dat a práci s nimi. Vždy je třeba připojovat data k mapě, ne mapu k datům.
 
-Z grafu je se zdá, že cena českého kapra je přímo úměrná vzdálenosti od Třeboně. To dává smysl.
+Z grafu je se zdá, že cena kapra je úměrná vzdálenosti od Třeboně. To dává smysl.
 
 ```{r krajsky-kapr, message = F, warning = F, out.width = '100%'}
 library(sf)       # umožňuje práci s prostorovými daty
@@ -290,6 +292,7 @@ ggplot(data = krajsky_kapr, aes(fill = hodnota)) +
   coord_sf(datum = NA)
 
 ```
+
 # Další čtení / reference
 
 * [Data Visualization](https://github.com/rstudio/cheatsheets/raw/master/data-visualization-2.1.pdf) cheatsheet od RStudia  

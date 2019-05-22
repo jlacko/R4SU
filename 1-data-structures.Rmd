@@ -61,7 +61,7 @@ Základní datové typy má erko tři:
 
 Existuje ještě jemnější členění čísel na celá čísla (integer), reálná (double) a komplexní (complex); v naprosté většině případů ho můžeme zanedbat (erko převod typů zařídí na pozadí). 
 
-U čísel přitom platí, že jako desetinný oddělovač se používá výradně tečka. Čárka má vlastní význam a za tečku zaměnit nejde.
+U čísel přitom platí, že jako desetinný oddělovač se používá výhradně tečka. Čárka má vlastní význam a za tečku zaměnit nejde.
 
 Navíc k základním typům existují dva speciální datové typy:
 
@@ -70,7 +70,9 @@ Navíc k základním typům existují dva speciální datové typy:
 
 Typický příklad kategorické proměnné je pohlaví. Pohlaví můžeme definovat jako mužské, ženské a jiné, přičemž nemá smysl uvažovat o tom že jedno z nich by bylo víc (nebo míň) než druhé.
 
-Typický příklad uspořádané kategorické proměnné je spokojenost. Spokojenost můžeme definovat jako malou, střední či velkou. Následně můžeme uvažovat o tom, že spokojenost velká > střední > malá, ale už nejde pracovat s tím že velká spokojenost = 2 × střední.
+Typický příklad uspořádané kategorické proměnné je spokojenost. Spokojenost můžeme definovat jako malou, střední či velkou. 
+
+Následně můžeme uvažovat o tom, že spokojenost velká > střední > malá, ale už nejde pracovat s tím, že velká spokojenost = 2 × střední.
 
 S kategorickými proměnnými se často setkáváme při importu (stringsAsFactors) a při tvorbě grafických výstupů (pořadí sad v legendě grafu).
 
@@ -203,7 +205,7 @@ dlouhy + kratky
 
 ### Data Frame
 
-Základním tabulkovým objektem je data frame. Lze ho chápat jako pospojované vektory, ve kterých sloupce (vždy s hodmotami stejnoho datového typu) představují proměnné, a řádky (nikoliv nutně stejného datového typu) představují pozorování.
+Základním tabulkovým objektem je data frame. Lze ho chápat jako pospojované vektory, ve kterých sloupce (vždy s hodnotami stejného datového typu) představují proměnné, a řádky (nikoliv nutně stejného datového typu) představují pozorování.
 
 Data frame vytvoříme pomocí funkce `data.frame()` nebo (častěji) načtením z externího zdroje.
 
@@ -229,7 +231,7 @@ Dolar se na české klávesnici napíše jako pravý Alt + ů.
 
 pocty[4, 4] # čtvrtý řádek, čtvrtý sloupec (1 hodnota)
 
-pocty[2:3, ] # druhý až třetí řádek (podmnožina data framu)
+pocty[2:3, ] # druhý až třetí řádek, sloupce bez omezení (podmnožina data framu)
 
 pocty[ , 3] # celý třetí sloupec (jako vektor)
 

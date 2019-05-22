@@ -32,7 +32,7 @@ RStudio je de-facto standardem pro erkové IDE; nainstalujete jej ze stránek ht
 
 Rozšiřující balíček nainstalujete v rámci erka příkazem `install.packages()` kde argumentem je jméno package. 
 
-Packagí je v erku mnoho (fun fact: aktuální počet dostupných balíčků zjistíte na příkazové řádkce pomocí `nrow(available.packages())` – je to *hodně* přes deset tisíc).
+Packagí je v erku mnoho (fun fact: aktuální počet dostupných balíčků zjistíte na příkazové řádce pomocí `nrow(available.packages())` – je to *hodně* přes deset tisíc).
 
 Pro svojí práci z nich budete potřebovat zlomek – "jen" desítky až stovky balíčků.
 
@@ -41,7 +41,7 @@ Balíčky potřebné pro tento kurz nainstalujete spuštěním následujícího 
 ```{r instalace-packagi, eval = F}
 # toto potřebuju:
 required <- c("installr", "tidyverse", "curl", "readxl", "DBI", "RPostgreSQL", 
-              "dbplyr", "lubridate", "scales", "sf", "RCzechia")
+              "stringi", "dbplyr", "lubridate", "scales", "sf", "RCzechia")
 # toto mám:
 installed <- installed.packages()[, 1]
 
@@ -55,14 +55,14 @@ Je normální, že stažení těchto packagí vyvolá stažení dalších packag
 
 Základní podpůrný program pro RStudio je verzovací systém Git.
 
-S Gitem získáte možnost ukládat erkové skripty do verzovacího repozitáře, jako je třeba GitHub. Pokud jste na Windows, a máte nainstalovanou package `installr` (viz. bod výše) tak pro instalaci gitu stačí příkaz `installr::install.git()`, který vyřeší ostatní. Na Unixovém prostředí `installr` nefunguje, ale pro uživatele Unixu by instalace Gitu neměla být nerozlousknutelným oříškem.
+S Gitem získáte možnost ukládat erkové skripty do verzovacího repozitáře, jako je třeba GitHub. Pokud jste na Windows, a máte nainstalovanou package `installr` (viz. bod výše) tak pro instalaci Gitu stačí příkaz `installr::install.git()`, který vyřeší ostatní. Na Unixovém prostředí `installr` nefunguje, ale pro uživatele Unixu by instalace Gitu neměla být zásadní problém.
 
 
 # RStudio nastavení
 
 Možností nastavení v RStudiu je mnoho; dostanete se k nim volnou Tools / Global Options.
 
-Pro většinu nastavení platí, že defaultní hodoty jsou dobrou volbou. Výjimku představuje ukládání prostředí. Důrazně doporučuji nikdy neukládat, ani automaticky neobnovovat, prostředí (Workspace) ani historii (History). To znamená nastavit ukládání workspace na None a odškrtnout všechny chlívečky ve Workspace a History sekci.
+Pro většinu nastavení platí, že defaultní hodnoty jsou dobrou volbou. Výjimku představuje ukládání prostředí. Důrazně doporučuji nikdy neukládat, ani automaticky neobnovovat, prostředí (Workspace) ani historii (History). To znamená nastavit ukládání workspace na None a odškrtnout všechny chlívečky ve Workspace a History sekci.
 
 
 <p align="center">
@@ -79,7 +79,7 @@ Nastavení fontu je pod Tools / Global Options / sekce Appearance (kyblík s bar
 
 Erkové skripty můžete spouštět obecně kdekoliv. To ale není recept na pořádek. RStudio proto nastavuje koncept "projektů" jako uzavřených celků s určitým cílem. Projekt tvoří skripty, podkladová data a dokumentace, které spolu "bydlí" v jednom adresáři a mají společné nastavení v souboru s koncovkou `*.Rproj`.  
 
-Pro lepší uspořádání projektů doporučuji jejich členění do podadresářů. Není to povinné, ale orientaci to pomahá. Doporčuji podadresáře:
+Pro lepší uspořádání projektů doporučuji jejich členění do podadresářů. Není to povinné, ale orientaci to pomáhá. Doporučuji podadresáře:
 
 - `code` pro skripty  
 - `data` pro pracovní data (měněná během výpočtů)
@@ -95,7 +95,7 @@ Nový projekt vytvoříte buď volbou File / New project..., případně kliknut
 
 Jako odměnu vám nabízím k vyklonování projekt R4SU = R for Spreadsheet Users / kurs erka pro uživatele tabulek.
 
-Získáte ho tak, že při tvorbě nového projektu jako zdroj zvolte Version Control / Git  a coby cestu k repozitáři zadáte `https://github.com/jlacko/R4SU.git`. Získáte tak na svém počítači akutální kopii všech školicích materiálů.
+Získáte ho tak, že při tvorbě nového projektu jako zdroj zvolte Version Control / Git  a coby cestu k repozitáři zadáte `https://github.com/jlacko/R4SU.git`. Získáte tak na svém počítači aktuální kopii všech školicích materiálů.
 
 # Další čtení / reference
 

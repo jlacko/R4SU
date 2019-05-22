@@ -40,7 +40,7 @@ Cílem případovky bude zejména:
 
 ## Transformace dat
 
-Manipulaci s daty začneme výpočtem průměrné roční ceny piva v Praze. Vybereme tedy cenového reprezentanta pivo, a referenční území kraj Prahu. Období necháme bez omezení, ale seskupíme podle roku a vypočteme průměr.
+Manipulaci s daty začneme výpočtem průměrné roční ceny piva v Praze. Vybereme tedy cenového reprezentanta pivo a referenční území kraj Prahu. Období necháme bez omezení, ale seskupíme podle roku a vypočteme průměr.
 
 Průměrná cena je složitější než se může zdát, protože ceny jsou vykázány za nestejně dlouhá období (interval mezi `obdobiod` a `obdobido` není vždy stejně dlouhý).
 
@@ -91,7 +91,7 @@ Předpověď děláme intervalovou, plus mínus 5% (tj. interval 0.95). Získám
 
 Když jsme si vypočetli předpověď, tak o ní podáme zprávu.
 
-Zvolili jsme složtější ggplot, který je postavený na třech zdrojích dat:
+Zvolili jsme složitější ggplot, který je postavený na třech zdrojích dat:
 
 - skutečnosti (za roky 2006 – 2018)  
 - intervalové předpovědi (za roky 2019 – 2023)  
