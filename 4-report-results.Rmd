@@ -68,7 +68,7 @@ Estetiky, které je možné pro grafy definovat, jsou:
 
 Pro začátek si připravíme data frame ročních průměrů ceny základních potravin – tedy piva a vína. 
 
-```{r zakladni-potraviny}
+```{r zakladni-potraviny, message = F}
 
 alkohol <- potraviny_csv %>% # vytvoříme objekt alkohol tak, že vezmeme potraviny a pak ...
   filter(reprcen_txt %in% c("Jakostní víno bílé [0,75 l]", # vybereme pivo a víno, a pak...

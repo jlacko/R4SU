@@ -62,12 +62,15 @@ S Gitem získáte možnost ukládat erkové skripty do verzovacího repozitáře
 
 Možností nastavení v RStudiu je mnoho; dostanete se k nim volnou Tools / Global Options.
 
-Pro většinu nastavení platí, že defaultní hodnoty jsou dobrou volbou. Výjimku představuje ukládání prostředí. Důrazně doporučuji nikdy neukládat, ani automaticky neobnovovat, prostředí (Workspace) ani historii (History). To znamená nastavit ukládání workspace na None a odškrtnout všechny chlívečky ve Workspace a History sekci.
-
+Pro většinu nastavení platí, že defaultní hodnoty jsou dobrou volbou. Výjimku představuje ukládání prostředí. Důrazně doporučuji nikdy neukládat, ani automaticky neobnovovat, prostředí (Workspace) ani historii (History). To znamená nastavit ukládání workspace na Never a odškrtnout všechny chlívečky ve Workspace a History sekci.
 
 <p align="center">
   <img src="http://github.com/jlacko/R4SU/blob/master/img/global-settings.png?raw=true" alt="Global Settings"/>
 </p>
+
+Pokud používáte aktuální verzi RStudia, což rozhodně doporučuji, tak pro uplatnění doporučených nastavení stačí zkopírovat a spustit tento skript:
+
+<script src="https://gist.github.com/jlacko/8c6e19e59c6c78d8143e67d0f2c8eddb.js"></script>
 
 Takto zajistíte, že při startu a restartu erka budete začínat se zcela čistou pamětí, a občas budete moci "setřít tabuli" tím, že provedete restart erka na pozadí (volba Session / Restart R).
 

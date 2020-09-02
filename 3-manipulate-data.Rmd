@@ -171,7 +171,7 @@ Klíčový úkol při práci s data framy je jejich propojování. V kontextu `d
 - `left_join()` vrací všechny záznamy z levé strany, a k nim přidá ty záznamy z pravé strany, pro které je hodnota klíče shodná. Je zaručeno, že na levé straně nepřijdete o žádná data, ale může dojít ke zdvojení řádek v případě vícečetné shody. Z pravé strany se nemusí připojit všechny záznamy, a naopak ne všechny záznamy z levé strany musí najít svůj ekvivalent. V takovém případě bude místo hodnoty zprava `NA`.
 - `inner_join()` záznamy zafiltruje. Vrací pouze záznamy, které se vyskytují na obou stranách (tj. není zaručeno, že nepřijdete o záznamy).
 
-```{r joiny}
+```{r joiny, message = F}
 
 mrkev <- potraviny_csv %>% # vytvoříme mrkev tak, že vezmeme tabulku potravin, a pak...
   filter(reprcen_txt == "Mrkev [1 kg]") %>%  # ... vybereme mrkev (jako prve banány), a pak... 
@@ -182,10 +182,10 @@ mrkev <- potraviny_csv %>% # vytvoříme mrkev tak, že vezmeme tabulku potravin
 mrkev # nakonec se na mrkev podíváme
 
 banany %>% # vezmeme banány, a pak...
-  left_join(mrkev, by = c("rok", "rok")) # ...připojíme mrkev, a ukážeme všechny hodnoty
+  left_join(mrkev, by = c("rok")) # ...připojíme mrkev, a ukážeme všechny hodnoty
 
 banany %>% # vezmeme banány, a pak...
-  inner_join(mrkev, by = c("rok", "rok")) # ...připojíme mrkev, a ukážeme pouze hodnoty shodné 
+  inner_join(mrkev, by = c("rok")) # ...připojíme mrkev, a ukážeme pouze hodnoty shodné 
  
 ```
 

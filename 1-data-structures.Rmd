@@ -216,8 +216,7 @@ Sloupce (proměnné) mohou být teoreticky jak ASCII tak UTF-8, ale prakticky vo
 pocty <- data.frame(cislo = c(1, 2, 3, 4, 5, 6),
                     CZ = c("jedna", "dva", "tři", "čtyři", "pět", "šest"),
                     EN = c("one", "two", "three", "four", "five", "six"),
-                    LA = factor(c("unus", "duo", "tres", "quattuor", "quinque", "sex")),
-                    stringsAsFactors = F)
+                    LA = factor(c("unus", "duo", "tres", "quattuor", "quinque", "sex")))
 
 pocty
 
@@ -229,7 +228,7 @@ Dolar se na české klávesnici napíše jako pravý Alt + ů.
 
 ```{r data-frame-II}
 
-pocty[4, 4] # čtvrtý řádek, čtvrtý sloupec (1 hodnota)
+pocty[4, 4] # čtvrtý řádek, čtvrtý sloupec - jde o faktor, vypíše se i rozsah hodnot
 
 pocty[2:3, ] # druhý až třetí řádek, sloupce bez omezení (podmnožina data framu)
 
